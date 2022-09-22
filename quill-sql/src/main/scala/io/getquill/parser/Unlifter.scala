@@ -248,7 +248,7 @@ object Unlifter {
       case Is[GroupByMap]('{ GroupByMap(${ query }, ${ byAlias }, ${ byBody }, ${ mapAlias }, ${ mapBody }) }) =>
         GroupByMap(query.unexpr, byAlias.unexpr, byBody.unexpr, mapAlias.unexpr, mapBody.unexpr)
 
-      case Is[SortBy]('{ SortBy(${ query }, ${ alias }, ${ criterias }, ${ ordering }) }) => SortBy(query.unexpr, alias.unexpr, criterias.unexpr, ordering.unexpr)
+      case Is[SortBy]('{ SortBy(${ query }, ${ alias }, ${ criteria }, ${ ordering }) }) => SortBy(query.unexpr, alias.unexpr, criteria.unexpr, ordering.unexpr)
       case Is[Distinct]('{ Distinct(${ a }) })                                            => Distinct(a.unexpr)
       case Is[DistinctOn]('{ DistinctOn(${ query }, ${ alias }, $body) })                 => DistinctOn(query.unexpr, alias.unexpr, body.unexpr)
       case Is[Nested]('{ Nested(${ a }) })                                                => Nested(a.unexpr)
