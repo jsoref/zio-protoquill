@@ -111,7 +111,7 @@ object Execution:
       case None =>
         GenericDecoder.summon[DecoderT, ResultRow, Session]
 
-  /** See if there there is a QueryMeta mapping T to some other type RawT */
+  /** See if there is a QueryMeta mapping T to some other type RawT */
   def summonQueryMetaTypeIfExists[T: Type](using Quotes) =
     import quotes.reflect._
     Expr.summon[QueryMeta[T, _]] match
@@ -207,7 +207,7 @@ object QueryExecution:
             // will just be `Any`. We need to manually detect that case since it requires no return type)
             applyAction(quotedOp)
         case _ =>
-          report.throwError(s"Could not match type type of the quoted operation: ${io.getquill.util.Format.Type(QAC)}")
+          report.throwError(s"Could not match type of the quoted operation: ${io.getquill.util.Format.Type(QAC)}")
 
     lazy val wrapValue = OuterSelectWrap.unlift(wrap)
     lazy val queryElaborationBehavior =
@@ -303,7 +303,7 @@ object QueryExecution:
      */
     def executeStatic[RawT: Type](state: StaticState, converter: Expr[RawT => T], extract: ExtractBehavior, topLevelQuat: Quat): Expr[Res] =
       val lifts = resolveLazyLiftsStatic(state.lifts)
-      trace"Original Lifts (including lazy): ${state.lifts.map(_.show)} resoved to: ${lifts.map(_.show)}".andLog()
+      trace"Original Lifts (including lazy): ${state.lifts.map(_.show)} resolved to: ${lifts.map(_.show)}".andLog()
 
       // Create the row-preparer to prepare the SQL Query object (e.g. PreparedStatement)
       // and the extractor to read out the results (e.g. ResultSet)
@@ -446,7 +446,7 @@ object PrepareDynamicExecution:
     val queryType = IdiomContext.QueryType.discoverFromAst(splicedAst, batchAlias)
     val idiomContext = IdiomContext(transpileConfig, queryType)
     val (outputAst, stmt, _) = idiom.translate(splicedAst, topLevelQuat, ExecutionType.Dynamic, idiomContext)(using naming)
-    val naiveQury = Unparticular.translateNaive(stmt, idiom.liftingPlaceholder)
+    val naiveQuery = Unparticular.translateNaive(stmt, idiom.liftingPlaceholder)
 
     val liftColumns =
       (ast: Ast, stmt: Statement) => Unparticular.translateNaive(stmt, idiom.liftingPlaceholder)
@@ -479,7 +479,7 @@ object PrepareDynamicExecution:
 
     // Match the ScalarTags we pulled out earlier (in ReifyStatement) with corresponding Planters because
     // the Planters can be out of order (I.e. in a different order then the ?s in the SQL query that they need to be spliced into).
-    // The ScalarTags are comming directly from the tokenized AST however and their order should be correct.
+    // The ScalarTags are coming directly from the tokenized AST however and their order should be correct.
     // also, some of they may be filtered out
     val (sortedLifts, sortedSecondaryLifts) =
       processLifts(gatheredLifts, liftTags, additionalLifts) match
@@ -528,10 +528,10 @@ object PrepareDynamicExecution:
       matchingExternals: List[External],
       secondaryLifts: List[Planter[_, _, _]] = List()
   ): Either[String, (List[Planter[_, _, _]], List[Planter[_, _, _]])] =
-    val encodeablesMap =
+    val encodablesMap =
       lifts.map(e => (e.uid, e)).toMap
 
-    val secondaryEncodeablesMap =
+    val secondaryEncodablesMap =
       secondaryLifts.map(e => (e.uid, e)).toMap
 
     val uidsOfScalarTags =
@@ -551,13 +551,13 @@ object PrepareDynamicExecution:
         case Secondary(uid, planter) => s"SecondaryPlanter($uid, ${planter})"
         case NotFound(uid)           => s"NotFoundPlanter($uid)"
 
-    val sortedEncodeables =
+    val sortedEncodables =
       uidsOfScalarTags
         .map { uid =>
-          encodeablesMap.get(uid) match
+          encodablesMap.get(uid) match
             case Some(element) => UidStatus.Primary(uid, element)
             case None =>
-              secondaryEncodeablesMap.get(uid) match
+              secondaryEncodablesMap.get(uid) match
                 case Some(element) => UidStatus.Secondary(uid, element)
                 case None          => UidStatus.NotFound(uid)
         }
@@ -586,8 +586,8 @@ object PrepareDynamicExecution:
         else
           None
 
-    val outputEncodeables =
-      sortedEncodeables match
+    val outputEncodables =
+      sortedEncodables match
         case HasNotFoundUids(uids) =>
           Left(s"Invalid Transformations Encountered. Cannot find lift with IDs: ${uids}.")
         case PrimaryThenSecondary(primaryPlanters, secondaryPlanters /*or List() if none*/ ) =>
@@ -600,10 +600,10 @@ object PrepareDynamicExecution:
           )
 
     // TODO This should be logged if some fine-grained debug logging is enabled. Maybe as part of some phase that can be enabled via -Dquill.trace.types config
-    // val remaining = encodeables.removedAll(uidsOfScalarTags)
+    // val remaining = encodables.removedAll(uidsOfScalarTags)
     // if (!remaining.isEmpty)
     //   println(s"Ignoring the following lifts: [${remaining.map((_, v) => Format.Expr(v.plant)).mkString(", ")}]")
-    outputEncodeables
+    outputEncodables
   end processLifts
 
 end PrepareDynamicExecution
@@ -653,7 +653,7 @@ object RunDynamicExecution:
     // Use the sortedLifts to prepare the method that will prepare the SQL statement
     val prepare = (row: PrepareRow, session: Session) => LiftsExtractor.Dynamic[PrepareRow, Session](sortedLifts, row, session)
 
-    // Exclute the SQL Statement
+    // Execute the SQL Statement
     val executionAst = if (spliceAst) outputAst else io.getquill.ast.NullValue
     ctx.execute(ContextOperation.SingleArgument(queryString, prepare, extractor, ExecutionInfo(ExecutionType.Dynamic, executionAst, topLevelQuat), fetchSize))
   }

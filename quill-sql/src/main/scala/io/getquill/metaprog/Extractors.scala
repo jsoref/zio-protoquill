@@ -45,7 +45,7 @@ object Extractors {
         term match
           // case Apply(Select(body, method), args) => Some((body, method, args))
           // case Apply(TypeApply(Select(body, method), _), args) => Some((body, method, args))
-          case Applys(Select(body, method), args) => Some((body, method, args))
+          case Applies(Select(body, method), args) => Some((body, method, args))
           case _                                  => None
   }
 
@@ -54,7 +54,7 @@ object Extractors {
    * where predicate can be a simple method or something selected from something else e.g:
    * foo.method(bar) or foo.method[T](bar)
    */
-  object Applys:
+  object Applies:
     def unapply(using Quotes)(term: quotes.reflect.Term) =
       import quotes.reflect._
       term match
@@ -67,13 +67,13 @@ object Extractors {
     def unapply(using Quotes)(term: Expr[_]): Option[(Expr[_], String, Expr[_])] =
       import quotes.reflect._
       term match {
-        case Unseal(Applys(Select(body, method), List(arg))) => Some((body.asExpr, method, arg.asExpr))
+        case Unseal(Applies(Select(body, method), List(arg))) => Some((body.asExpr, method, arg.asExpr))
         case _                                               => None
       }
   }
 
   // Designed to be a more generic version the Varargs which does not handle all cases.
-  // Particularily when a varargs parameter is passed from one inline function into another.
+  // Particularly when a varargs parameter is passed from one inline function into another.
   object GenericSeq {
     def unapply(using Quotes)(term: Expr[_]): Option[List[Expr[_]]] = {
       import quotes.reflect._
@@ -108,7 +108,7 @@ object Extractors {
   // Always match (whether ast starts with Typed or not). If it does, strip the Typed node.
   object Untype {
     def unapply(using Quotes)(term: quotes.reflect.Term): Option[quotes.reflect.Term] = term match {
-      case TypedMatroshkaTerm(t) => Some(t)
+      case TypedMatryoshkaTerm(t) => Some(t)
       case other                 => Some(other)
     }
 
@@ -133,7 +133,7 @@ object Extractors {
       }
   }
 
-  object TypedMatroshkaTerm {
+  object TypedMatryoshkaTerm {
     def recurse(using Quotes)(innerTerm: quotes.reflect.Term): quotes.reflect.Term =
       import quotes.reflect._
       innerTerm match
@@ -147,10 +147,10 @@ object Extractors {
         case other          => None
   }
 
-  object TypedMatroshka {
+  object TypedMatryoshka {
     def unapply(using Quotes)(term: Expr[Any]): Option[Expr[Any]] =
       import quotes.reflect._
-      TypedMatroshkaTerm.unapply(term.asTerm).map(_.asExpr)
+      TypedMatryoshkaTerm.unapply(term.asTerm).map(_.asExpr)
   }
 
   object SelectExpr {
@@ -540,7 +540,7 @@ object Extractors {
         case _                        => None
 
   /**
-   * Uninline the term no matter what (TODO should reove the unapply case) that pattern always matches
+   * Uninline the term no matter what (TODO should remove the unapply case) that pattern always matches
    * and is too confusing
    */
   object Uninline {
@@ -570,7 +570,7 @@ object Extractors {
     /**
      * Matches expressions containing literal constant values and extracts the value.
      *
-     *  - Converts expression containg literal values to their values:
+     *  - Converts expression containing literal values to their values:
      *    - `'{1}` -> `1`, `'{2}` -> `2`, ...
      *    - For all primitive types and `String`
      *
@@ -581,7 +581,7 @@ object Extractors {
      *    // value: T
      *  ```
      *
-     *  To directly unlift an expression `expr: Expr[T]` consider using `expr.unlift`/`expr.unliftOrError` insead.
+     *  To directly unlift an expression `expr: Expr[T]` consider using `expr.unlift`/`expr.unliftOrError` instead.
      */
     def unapply[T](expr: Expr[T])(using Quotes): Option[T] = {
       import quotes.reflect._
@@ -610,7 +610,7 @@ object Extractors {
    * a simple performance optimization is to check if there's a single-method being matched and if so, what is it's name.
    * Since Scala matches unapply causes left-to-right (nested and recursively),  we can add a unapply clause
    * that will grab the name of the method (if it is a single one being matched which in most cases of the
-   * QueryParser is exaclty what we're looking for) and then match it to a name that we expect it to have.
+   * QueryParser is exactly what we're looking for) and then match it to a name that we expect it to have.
    * For example, if we're trying to match this:
    * {{
    *   case '{ ($o: Option[t]).map(${Lambda1(id, idType, body)}) } =>
@@ -620,7 +620,7 @@ object Extractors {
    *   case "map" -@> '{ ($o: Option[t]).map(${Lambda1(id, idType, body)}) } =>
    * }}
    * This will check that there's a `Apply(TypeApply(Select(_, "map"), _), _)` being called
-   * and then only proceecd into the quoted-matcher if that is the case.
+   * and then only proceed into the quoted-matcher if that is the case.
    */
   object MatchingOptimizers:
     object --> :
@@ -644,7 +644,7 @@ object Extractors {
       def unapply(using Quotes)(expr: Expr[_]) =
         import quotes.reflect._
         expr.asTerm match
-          case Applys(SelectApplyN.Term(_, methodName, _), _) =>
+          case Applies(SelectApplyN.Term(_, methodName, _), _) =>
             Some((methodName, expr))
           case _ => None
   end MatchingOptimizers

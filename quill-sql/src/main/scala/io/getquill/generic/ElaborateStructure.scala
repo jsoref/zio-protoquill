@@ -57,7 +57,7 @@ enum ElaborationSide:
  * {{{
  * SELECT p.name, p.age FROM (SELECT p.* from Person p) AS p
  * }}}
- * (Note that redudant map would typically be flattened out since it is extraneous and the inner
+ * (Note that redundant map would typically be flattened out since it is extraneous and the inner
  * SELECT would no longer be present)
  *
  * Some special provisions were made for fields inside optional objects:
@@ -72,7 +72,7 @@ enum ElaborationSide:
  *
  * Now, since Quats were introduced into Quill since 3.6.0 (technically since 3.5.3), this step is not necessarily needed
  * for query expansion since `Ident("p")` is now understood to expand into it's corresponding SelectValue fields so for queries,
- * this stage could technically be elimiated. However, this logic is also useful for ActionMeta where we have
+ * this stage could technically be eliminated. However, this logic is also useful for ActionMeta where we have
  * something like this:
  * {{{
  * case class Person(name: String, age: Int)
@@ -142,7 +142,7 @@ object ElaborateStructure {
       // Need to merge these terms
       val orderedGroupBy = (this.children ++ other.children).groupByOrdered(_.name)
       // Validate the keys to make sure that they are all the same kind of thing. E.g. if you have a Shape coproduct
-      // with a Square.height and a Rectagnle.height, both 'height' fields but be a Leaf (and also in the future will need to have the same data type)
+      // with a Square.height and a Rectangle.height, both 'height' fields but be a Leaf (and also in the future will need to have the same data type)
       // TODO Need to add datatype to Term so we can also verify types are the same for the coproducts
       val newChildren =
         orderedGroupBy.map((term, values) => {
@@ -217,7 +217,7 @@ object ElaborateStructure {
       }
 
     /**
-     * Top-Level expansion of a Term is slighly different the later levels. A the top it's always ident.map(id => ...)
+     * Top-Level expansion of a Term is slightly different the later levels. A the top it's always ident.map(id => ...)
      * if Ident is an option as opposed to OptionMap which it would be, in lower layers.
      *
      * Legend:
@@ -356,12 +356,12 @@ object ElaborateStructure {
     // for errors/warnings
     def encDecText =
       side match
-        case ElaborationSide.Encoding => "encodeable"
-        case ElaborationSide.Decoding => "decodeable"
+        case ElaborationSide.Encoding => "encodable"
+        case ElaborationSide.Decoding => "decodable"
 
     val isAutomaticLeaf =
       side match
-        // Not sure why the UDT part is needed since it shuold always have a GenericEncoder/Decoder anyway
+        // Not sure why the UDT part is needed since it should always have a GenericEncoder/Decoder anyway
         case _ if (TypeRepr.of[T] <:< TypeRepr.of[io.getquill.Udt]) =>
           // println(s"------- TREATING UDT as Leaf ${Format.TypeOf[T]}")
           // If we are elaborating a UDT and are told to wrap normally, make sure that this is done
@@ -371,10 +371,10 @@ object ElaborateStructure {
             case UdtBehavior.Leaf   => true
             case UdtBehavior.Derive => false
         case ElaborationSide.Encoding =>
-          // println(s"------- ALREDY EXISTS Encoder for ${Format.TypeOf[T]}")
+          // println(s"------- ALREADY EXISTS Encoder for ${Format.TypeOf[T]}")
           Expr.summon[GenericEncoder[T, _, _]].isDefined
         case ElaborationSide.Decoding =>
-          // println(s"------- ALREDY EXISTS Decoder for ${Format.TypeOf[T]}")
+          // println(s"------- ALREADY EXISTS Decoder for ${Format.TypeOf[T]}")
           Expr.summon[GenericDecoder[_, _, T, DecodingType.Specific]].isDefined
 
     // TODO Back here. Should have a input arg that asks whether elaboration is
@@ -407,7 +407,7 @@ object ElaborateStructure {
               alternatives.reduce((termA, termB) => termA.merge[T](termB))
             case _ =>
               report.throwError(
-                s"Althought a mirror of the type ${Format.TypeOf[T]} can be summoned. It is not a sum-type, a product-type, or a ${encDecText} entity so it's fields cannot be understood in the structure-elaborator. It's mirror is ${Format.Expr(ev)}"
+                s"Although a mirror of the type ${Format.TypeOf[T]} can be summoned. It is not a sum-type, a product-type, or a ${encDecText} entity so it's fields cannot be understood in the structure-elaborator. It's mirror is ${Format.Expr(ev)}"
               )
         case None =>
           report.throwError(s"A mirror of the type ${Format.TypeOf[T]} cannot be summoned. It is not a sum-type, a product-type, or a ${encDecText} entity so it's fields cannot be understood in the structure-elaborator.")
@@ -429,7 +429,7 @@ object ElaborateStructure {
     expanded.toAst.map(_._1)
   }
 
-  def ofAribtraryType[T: Type](baseName: String, side: ElaborationSide)(using Quotes): Ast =
+  def ofArbitraryType[T: Type](baseName: String, side: ElaborationSide)(using Quotes): Ast =
     productized(side, baseName)
 
   /**
@@ -468,7 +468,7 @@ object ElaborateStructure {
    *
    * Legend: x:a->b := Assignment(Ident("x"), a, b)
    */
-  // TODO Should have specific tests for this function indepdendently
+  // TODO Should have specific tests for this function independently
   // keep namefirst, namelast etc.... so that testability is easier due to determinism
   // re-key by the UIDs later
   def ofProductValue[T: Type](productValue: Expr[T], side: ElaborationSide)(using Quotes): TaggedLiftedCaseClass[Ast] = {
@@ -515,7 +515,7 @@ object ElaborateStructure {
         // in reality the type might be optional on the parent level as well.
         // For example: case class Person(name: Option[Name], age: Int), case class Name(first: Option[String], last: String)
         // the `last` field in Name has to be treated as an optional (i.e. after DeconstructElaboratedEntityLevels elements Expr(p => p.name.first), Expr(p => p.name.last), etc... have been found)
-        // so we have to treat p.name.last as an Option insead of a plain field.
+        // so we have to treat p.name.last as an Option instead of a plain field.
         // For example if we want to convert fields of `p:Person` to a string we need to do p.name.last.map(v => v.toString) instead of
         // just tacking on .toString after the p.name.last expression since that would be p.name.last:Option[String].toString which
         // makes an invalid query. See the MapFlicer for an example of this.
@@ -554,7 +554,7 @@ object ElaborateStructure {
 
   /**
    * Flatten the elaboration from 'node' into a completely flat product type
-   * Technicallly don't need Type T but it's very useful to know for errors and it's an internal API so I'll keep it for now
+   * Technically don't need Type T but it's very useful to know for errors and it's an internal API so I'll keep it for now
    */
   private[getquill] def productValueToAst[T: Type](node: Term /* i.e. the elaboration */ )(using Quotes): (String, Ast) =
     def toAstRec(node: Term, parentTerms: Chunk[String], topLevel: Boolean = false): (String, Ast) =

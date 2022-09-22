@@ -5,7 +5,7 @@ import io.getquill.ast.{Ident => AIdent, Query => AQuery, _}
 import scala.quoted._
 import scala.annotation.StaticAnnotation
 import scala.deriving._
-import io.getquill.Embedable
+import io.getquill.Embeddable
 
 import scala.reflect.ClassTag
 import io.getquill.norm.capture.AvoidAliasConflict
@@ -160,9 +160,9 @@ object ParserHelpers:
             //    In Scala2-Quill it was required that `Name` has an `extends Embedded` by in ProtoQuill this is not required.
             //    In this case in the SQL we just want to take the last property in the chain `p.name.first` i.e. `first`.
             // 2) When ad-hoc case classes are used in such as way as to form nested queries the names of the nested items
-            //    are concatonated so that sub-select variables are unique.
+            //    are concatenated so that sub-select variables are unique.
             //    For example:
-            //      (assuming: cc Contact(firstName:String), cc Person(name:Name, firstName:String), cc Name(firstName:String), note that firstName field is intentually redundant)
+            //      (assuming: cc Contact(firstName:String), cc Person(name:Name, firstName:String), cc Name(firstName:String), note that firstName field is intentionally redundant)
             //      query[Contact].nested.map(c => Person(Name(c.firstName), c.firstName)).nested needs to become:
             //      SELECT x.namefirstName AS firstName, x.firstName FROM (
             //        SELECT c.firstName AS namefirstName, c.firstName FROM ( -- Notice how Name becomes expanded to `namefirstName`, if Name has other properties e.g. Name.foo they become `namefoo`
@@ -273,7 +273,7 @@ object ParserHelpers:
 
     /**
      * Type-check two trees, if one of them has optionals, go into the optionals to find the root types
-     * in each of them. Then compare the types that are inside. If they are not compareable, abort the build.
+     * in each of them. Then compare the types that are inside. If they are not comparable, abort the build.
      * Otherwise return type of which side (or both) has the optional. In order to do the actual comparison,
      * the 'weak conformance' operator is used and a subclass is allowed on either side of the `==`. Weak
      * conformance is necessary so that Longs can be compared to Ints etc...
@@ -317,7 +317,7 @@ object ParserHelpers:
      * Match types in the most wide way possible. This function is not for generalized type equality since quill does not directly
      * compare anything, rather it just translates things into SQL expressions. This kind of check is used in a general sense when things
      * that it doesn't even make sense to compare are compared e.g. an Person and a String. In this case, we want to provide some kind
-     * of compile-time warning that the comparision the user is attempting to do in SQL is non sensical in the first place. Therefore when
+     * of compile-time warning that the comparison the user is attempting to do in SQL is non sensical in the first place. Therefore when
      * there is any kind of possibility that the expression makes sense (e.g. by comparing a Dog to a Animal (i.e. class to subclass), by comparing
      * two numeric types of any kind etc... we allow the comparison to happen).
      * For int/long/float/double comparisons don't crash on compile-time typing can re-evaluate this upon user feedback
@@ -356,8 +356,8 @@ object ParserHelpers:
           // query[Person].map(p => (p.name, p.age)).filter((name, age) => name == "Joe")
           // Then in the AST it will look something like:
           // query[Person].map(p => (p.name, p.age)).filter(x$1 => { val name=x$1._1; val age=x$1._2; name == "Joe" })
-          // and you need to resolve the val defs thare are created automatically
-          case DefDef(name, paramss, tpe, rhsOpt) if (paramss.length == 0) =>
+          // and you need to resolve the val defs that are created automatically
+          case DefDef(name, params, tpe, rhsOpt) if (params.length == 0) =>
             // println(s"====== Parsing Def Def ${name} = ${rhsOpt.map(_.show)}")
             val body =
               rhsOpt match {

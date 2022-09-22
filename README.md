@@ -44,13 +44,13 @@ For further information, watch:
 # Getting Started
 
 The simplest way to get started with ProtoQuill is with the standard JDBC contexts.
-These are sychronous so for a high-throughput system you will ultimately need to switch
+These are synchronous so for a high-throughput system you will ultimately need to switch
 to either the ZIO-based contexts, Jasync, or the Monix ones (Monix contexts coming soon!)
 
 Add the following to your SBT file:
 ```scala
 libraryDependencies ++= Seq(
-  // Syncronous JDBC Modules
+  // Synchronous JDBC Modules
   "io.getquill" %% "quill-jdbc" % "3.12.0.Beta1.7",
   // Or ZIO Modules
   "io.getquill" %% "quill-jdbc-zio" % "3.12.0.Beta1.7",
@@ -112,7 +112,7 @@ inline def joes = quote {
   people.filter(p => p.name == "Joe")
 }
 
-> You *do not* need to import a context in ProtoQuill to make a quoation, just `io.getquill._`. Contexts are only needed for lifting. See the `Lifting and Lazy Lifting` section for more detail.
+> You *do not* need to import a context in ProtoQuill to make a quotation, just `io.getquill._`. Contexts are only needed for lifting. See the `Lifting and Lazy Lifting` section for more detail.
 
 run(joes)
 // TODO Get SQL
@@ -130,7 +130,7 @@ run(joes)
 // TODO Get SQL
 ```
 
-However, if parts of the the query are dynamic (i.e. not `inline def`) it is needed:
+However, if parts of the query are dynamic (i.e. not `inline def`) it is needed:
 ```scala
 inline def people = quote {
   query[Person]
@@ -385,7 +385,7 @@ The way that this works is that in each `?` slot, the corresponding column is lo
 
 ## Co-Product Rows
 
-Co-Product are supported using Enums and sealed traits. Keep in mind that for now, only static-global enums are supported and any sealed traits that are used must be sealed in a *separate object* in order to work. Otherwise a sum-type mirror of them will not be found. In ORM-terms, Quill uses a "Table Per Class-Hierarchy" model of co-product polymorhism in which data for all co-products must be encodeable within a simple row.
+Co-Product are supported using Enums and sealed traits. Keep in mind that for now, only static-global enums are supported and any sealed traits that are used must be sealed in a *separate object* in order to work. Otherwise a sum-type mirror of them will not be found. In ORM-terms, Quill uses a "Table Per Class-Hierarchy" model of co-product polymorphism in which data for all co-products must be encodable within a simple row.
 > Note: As a possible avenue of exploration, this approach can be combined with QueryMeta to relax the requirement of having a single table for all coproducts since QueryMeta can be used to produce a set of joins under the facade of being a single table.
 
 
@@ -476,7 +476,7 @@ For this reason, ProtoQuill supports an easy extension syntax for custom parsing
    ```
    Note that these to steps need to be done in a *separate compilation unit*. That typically means that you
    need to make a separate SBT project with this logic that is compiled before the rest of your application code.
-3. Now in your application code, you can use the custom parser after defing it as a given (or implicit)
+3. Now in your application code, you can use the custom parser after defining it as a given (or implicit)
    ```scala
    given myParser: CustomParser.type = CustomParser
    import MyBusinessLogic._
@@ -532,7 +532,7 @@ for backwards-compatibility reasons. The Queries in which it is used will inhere
 
 # Rationale for Inline
 
-For a basic reasoning of why Inline was chosen (instead of Refined-Types on `val` expressions) have a look at the video: [Quill, Dotty, And The Awesome Power of 'Inline'](https://www.youtube.com/watch?v=SmBpGkIsJIU). A more thorough explination is TBD.
+For a basic reasoning of why Inline was chosen (instead of Refined-Types on `val` expressions) have a look at the video: [Quill, Dotty, And The Awesome Power of 'Inline'](https://www.youtube.com/watch?v=SmBpGkIsJIU). A more thorough explanation is TBD.
 
 # Caliban Integration
 
@@ -720,7 +720,7 @@ As the writer of Caliban puts it... "From the front-end down to the DB, you only
  - Write a `query.filter(p => p.firstName.inSet("foo", lift(bar), "baz"))` using the `ListFlicer`.
    this could either translate into `WHERE firstName == 'foo' OR firstName == ? OR firstName == 'baz'` or
    `WHERE firstName in ('foo', ?, 'baz')`.
- - Combine MapFlicer and ListFilcer to allow up to N maps to filter each field up to N times
+ - Combine MapFlicer and ListFlicer to allow up to N maps to filter each field up to N times
    this would be very useful with `like` in order to check that a field matches multiple patterns
    e.g. `... FROM Person p WHERE p.firstName like 'j%' AND p.firstName like '%e' i.e. find
    all people whose name starts with 'j' and ends with 'e'.

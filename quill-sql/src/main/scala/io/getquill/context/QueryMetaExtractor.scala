@@ -122,7 +122,7 @@ object QueryMetaExtractor {
         // much more easily since we can just combine the lifts and Apply the
         // QueryMeta quotation to the initial one
 
-        // Syntheize a new quotation to combine the lifts and quotes of the reapplied
+        // Synthesize a new quotation to combine the lifts and quotes of the reapplied
         // query. I do not want to use QuoteMacro here because that requires a parser
         // which means that the Context will require a parser as well. That will
         // make the parser harder to customize by users
@@ -133,7 +133,7 @@ object QueryMetaExtractor {
 
         Some(StaticRequip(reappliedQuery, extractorFunc))
 
-      // In these two cases, the quoation applies during runtime at which point the quotation of the quip
+      // In these two cases, the quotation applies during runtime at which point the quotation of the quip
       // and query quotes and lifts will all be done during runtime.
       case _: Pluckable | _: Pointable =>
         None

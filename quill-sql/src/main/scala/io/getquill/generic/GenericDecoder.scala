@@ -34,7 +34,7 @@ object Summon:
     Expr.summon[GenericNullChecker[ResultRow, Session]] match
       case Some(nullChecker) => '{ $nullChecker($index, $resultRow) }
       case None              =>
-        // TODO Maybe check the session type and based on what it is, say "Cannot summon a JDBC null-chercker..."
+        // TODO Maybe check the session type and based on what it is, say "Cannot summon a JDBC null-checker..."
         report.throwError(s"Cannot find a null-checker for the session type ${Format.TypeOf[Session]} (whose result-row type is: ${Format.TypeOf[ResultRow]})")
 
   def decoder[ResultRow: Type, Session: Type, T: Type](index: Expr[Int], resultRow: Expr[ResultRow], session: Expr[Session])(using Quotes): Option[Expr[T]] =
@@ -100,7 +100,7 @@ object GenericDecoder {
         //   case class Square(length: Int, width: Int) extends Shape
         //   case class Circle(radius: Int) extends Shape
         //   In that case `tpe` here will be Square/Circle
-        // In this case we need to decode ResultRow(shapeType, raidus, length, width) but
+        // In this case we need to decode ResultRow(shapeType, radius, length, width) but
         // However, the Square shape will only know about columns List(length, width)
         // the Circle shape will only know about columns: List(radius)
         // The column resolver looks at the expected columns and figures out what the real index is supposed to be.
@@ -120,7 +120,7 @@ object GenericDecoder {
   def decodeOptional[T: Type, ResultRow: Type, Session: Type](index: Int, baseIndex: Expr[Int], resultRow: Expr[ResultRow], session: Expr[Session])(using Quotes): FlattenData =
     import quotes.reflect._
     // Try to summon a specific optional from the context, this may not exist since
-    // some optionDecoder implementations themselves rely on the context-speicific Decoder[T] which is actually
+    // some optionDecoder implementations themselves rely on the context-specific Decoder[T] which is actually
     // GenericDecoder[ResultRow, T, Session, DecodingType.Specific] since they are Specific, they cannot surround Product types.
     Expr.summon[GenericDecoder[ResultRow, Session, T, DecodingType.Specific]] match
 
@@ -154,14 +154,14 @@ object GenericDecoder {
     // List((new Name(Decoder("Joe") || Decoder("Bloggs")), Decoder(123))
     // This is what needs to be fed into the constructor of the outer-entity i.e.
     // new Person((new Name(Decoder("Joe") || Decoder("Bloggs")), Decoder(123))
-    val productElments = flattenData.map(_.decodedExpr)
+    val productElements = flattenData.map(_.decodedExpr)
     // actually doing the construction i.e. `new Person(...)`
-    val constructed = ConstructDecoded[T](types, productElments, m)
+    val constructed = ConstructDecoded[T](types, productElements, m)
 
     // E.g. for Person("Joe", 123) the List(q"!nullChecker(0,row)", q"!nullChecker(1,row)") columns
     // that eventually turn into List(!NullChecker("Joe"), !NullChecker(123)) columns.
     // Once you are in a product that has a product inside e.g. Person(name: Name("Joe", "Bloggs"), age: 123)
-    // they will be the concatonations of the Or-clauses e.g.
+    // they will be the concatenations of the Or-clauses e.g.
     // List( (NullChecker("Joe") || NullChecker("Bloggs")), NullChecker(123))
     // This is what needs to be the null-checker of the outer entity i.e.
     // if ((NullChecker("Joe") || NullChecker("Bloggs")) || NullChecker(123)) Some(new Name(...)) else None
@@ -209,7 +209,7 @@ object GenericDecoder {
               // Otherwise, recursively summon fields
               ev match
                 case '{ $m: Mirror.SumOf[T] { type MirroredElemLabels = elementLabels; type MirroredElemTypes = elementTypes } } if (!isBuiltInType[T]) =>
-                  // do not treat optional objects as coproduts, a Specific (i.e. EncodingType.Specific) Option-decoder
+                  // do not treat optional objects as coproducts, a Specific (i.e. EncodingType.Specific) Option-decoder
                   // is defined in the EncodingDsl
                   DecodeSum[T, ResultRow, Session, elementTypes](index, baseIndex, resultRow, session)
 

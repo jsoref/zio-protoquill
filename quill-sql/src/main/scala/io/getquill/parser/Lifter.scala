@@ -53,7 +53,7 @@ trait LifterProxy {
 /**
  * Convert constructs of Quill Ast into Expr[Ast]. This allows them to be passed
  * back an fourth between inline Quotation blocks during compile-time which should eventually
- * be bassed into a run-call-site where they will be evaluated into SQL.
+ * be passed into a run-call-site where they will be evaluated into SQL.
  *
  * Note that liftable List is already taken care of by the Dotty implicits
  */
@@ -119,7 +119,7 @@ case class Lifter(serializeQuat: SerializeQuat, serializeAst: SerializeAst) exte
   given liftableReturnAction: NiceLiftable[ReturnAction] with
     def lift =
       case ReturnAction.ReturnNothing         => '{ ReturnAction.ReturnNothing }
-      case ReturnAction.ReturnColumns(colums) => '{ ReturnAction.ReturnColumns(${ colums.expr }) }
+      case ReturnAction.ReturnColumns(columns) => '{ ReturnAction.ReturnColumns(${ columns.expr }) }
       case ReturnAction.ReturnRecord          => '{ ReturnAction.ReturnRecord }
 
   given liftRenameable: NiceLiftable[Renameable] with
@@ -127,7 +127,7 @@ case class Lifter(serializeQuat: SerializeQuat, serializeAst: SerializeAst) exte
       case Renameable.ByStrategy => '{ Renameable.ByStrategy }
       case Renameable.Fixed      => '{ Renameable.Fixed }
 
-  given liftVisbility: NiceLiftable[Visibility] with {
+  given liftVisibility: NiceLiftable[Visibility] with {
     def lift =
       case Visibility.Visible => '{ Visibility.Visible }
       case Visibility.Hidden  => '{ Visibility.Hidden }
@@ -291,7 +291,7 @@ case class Lifter(serializeQuat: SerializeQuat, serializeAst: SerializeAst) exte
       case Map(query: Ast, alias: AIdent, body: Ast)                        => '{ Map(${ query.expr }, ${ alias.expr }, ${ body.expr }) }
       case FlatMap(query: Ast, alias: AIdent, body: Ast)                    => '{ FlatMap(${ query.expr }, ${ alias.expr }, ${ body.expr }) }
       case ConcatMap(query: Ast, alias: AIdent, body: Ast)                  => '{ ConcatMap(${ query.expr }, ${ alias.expr }, ${ body.expr }) }
-      case SortBy(query: Ast, alias: AIdent, criterias: Ast, ordering: Ast) => '{ SortBy(${ query.expr }, ${ alias.expr }, ${ criterias.expr }, ${ ordering.expr }) }
+      case SortBy(query: Ast, alias: AIdent, criteria: Ast, ordering: Ast) => '{ SortBy(${ query.expr }, ${ alias.expr }, ${ criteria.expr }, ${ ordering.expr }) }
       case GroupBy(query: Ast, alias: AIdent, body: Ast)                    => '{ GroupBy(${ query.expr }, ${ alias.expr }, ${ body.expr }) }
       case GroupByMap(query: Ast, byAlias: AIdent, byBody: Ast, mapAlias: AIdent, mapBody: Ast) =>
         '{ GroupByMap(${ query.expr }, ${ byAlias.expr }, ${ byBody.expr }, ${ mapAlias.expr }, ${ mapBody.expr }) }

@@ -43,12 +43,12 @@ class Interpolator2(
     implicit class StrOps(str: String) {
       def reallyFitsOnOneLine: Boolean = {
         val output = !str.contains("\n") && !str.contains("\r")
-        // println(s"*********************** STRING FITS ONE ONE LINE = ${output} - ${str}")
+        // println(s"*********************** STRING FITS ON ONE LINE = ${output} - ${str}")
         output
       }
       def reallyMultiline(indent: Int, prefix: String, prependNewline: Boolean = false): String = {
         // Split a string and indent.... if it is actually multi-line. Since this typically is used
-        // on parts of strings of a parent-string which may be multline, but the individual elements
+        // on parts of strings of a parent-string which may be multiline, but the individual elements
         // might not be which results in strange things like:
         //    (Node Option) ['mt] Mapping: asExprOf:       |lastName      | into       |String      | in       |(
         //    |    (optField: Option[LastNameAge]) =>
@@ -218,7 +218,7 @@ class Interpolator2(
         case Some((output, indent)) =>
           // Even though we usually want to evaluate the command after the initial log was done
           // (so that future logs are nested under this one after the intro text but not
-          // before the return) but we cann't do that in this case because the switch indicating
+          // before the return) but we can't do that in this case because the switch indicating
           // whether to output anything or not is dependant on the return value.
           val result = command
 

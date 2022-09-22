@@ -49,7 +49,7 @@ import java.util.UUID
  * Each function of field-insertion API basically takes the form
  * {code} (v) => vAssignmentProperty -> assignmentValue (on the AST) {code}
  *
- * Let's take a look at a slighly more complex example
+ * Let's take a look at a slightly more complex example
  * Given:
  * {code}
  *  case class Person(name: String, age: Option[Age]); Age(value: Int)
@@ -72,7 +72,7 @@ import java.util.UUID
  *
  * The end result of this synthesis is a series of assignments for an insert for the given entity.
  *
- * Another possiblity is that the entity is lifted:
+ * Another possibility is that the entity is lifted:
  * {code}
  *  case class Person(name: String, age: Option[Age]); Age(value: Int)
  *  quote { query[Person].insertValue(lift(Person("Joe", Age(345)))) }
@@ -144,7 +144,7 @@ object InsertUpdateMacro {
           case QuotationLotExpr.Unquoted(unquotation) =>
             unquotation match
               // The {querySchema[Person]} part is static (i.e. fully known at compile-time)
-              // (also note that if it's a filter with a pre-existing lift unlift(query[Person]).filter(p => lift("Joe")).insertValue(...)
+              // (also note that if it's a filter with a preexisting lift unlift(query[Person]).filter(p => lift("Joe")).insertValue(...)
               // this case will also happen and there can be one or more lifts i.e. lift("Joe") coming from the filter clause)
               case Uprootable(_, ast, lifts) =>
                 val unliftedAst = Unlifter(ast)
@@ -265,7 +265,7 @@ object InsertUpdateMacro {
                 report.throwError(s"The lifted insertion element needs to be parsed as a Ast CaseClass but it is: ${ast}")
               ast.asInstanceOf[CaseClass]
             case _ =>
-              report.throwError(s"Cannot uproot lifted element. A lifted Insert element e.g. query[T].insertValue(lift(element)) must be lifted directly inside the lift clause. The elment was:\n${insertee.show}")
+              report.throwError(s"Cannot uproot lifted element. A lifted Insert element e.g. query[T].insertValue(lift(element)) must be lifted directly inside the lift clause. The element was:\n${insertee.show}")
         // Otherwise the inserted element (i.e. the insertee) is static and should be parsed as an ordinary case class
         // i.e. the case query[Person]insertValue(Person("Joe", "Bloggs")) (or the batch case)
         case _ =>
@@ -294,7 +294,7 @@ object InsertUpdateMacro {
      * E.g. if we have something like this: `val ip = quote { (p: Person) => query[Person].insertValue(p) }`
      * and then later: `run(ip(lift(Person("Joe",123))))` then the assignments list is just based
      * on the `p` identifier of the `ip` quoted function i.e:
-     * `(v:Person) => v.firstName -> p.firstName` this is achived by doing
+     * `(v:Person) => v.firstName -> p.firstName` this is achieved by doing
      * BetaReduce(v.firstName, v -> p). Later on when `ip(lift(Person("Joe",123)))`
      * happens the `CaseClass(firstName -> lift(...), age -> lift(...))` comes in and
      * all the right values are plugged in correctly.
@@ -374,7 +374,7 @@ object InsertUpdateMacro {
           // so we just process it based on what kind of pattern we encounter
           case astCaseClass: CaseClass => deduceAssignmentsFromCaseClass(astCaseClass)
           // if it is a Ident, then we know we have a batch query i.e. liftQuery(people).foreach(p => query[Person].insertValue(p))
-          // we want to re-syntheize this as a lifted thing i.e. liftQuery(people).foreach(p => query[Person].insertValue(lift(p)))
+          // we want to re-synthesize this as a lifted thing i.e. liftQuery(people).foreach(p => query[Person].insertValue(lift(p)))
           // and then reprocess the contents.
           // We don't want to do that here thought because we don't have the PrepareRow
           // so we can't lift content here into planters. Instead this is done in the QueryExecutionBatch pipeline
@@ -401,7 +401,7 @@ object InsertUpdateMacro {
      * This is used for the createFromPremade if we need to wrap it into insertReturning which is used for batch-returning query execution.
      */
     def createQuotation(summonState: EntitySummonState[Ast], assignmentOfEntity: List[Assignment], lifts: List[Expr[Planter[?, ?, ?]]], pluckedUnquotes: List[Expr[QuotationVase]]) = {
-      // Processed Assignments AST plus any lifts that may have come from the assignments AST themsevles.
+      // Processed Assignments AST plus any lifts that may have come from the assignments AST themselves.
       // That is usually the case when
       val assignmentList = processAssignmentsAndExclusions(assignmentOfEntity)
 

@@ -125,7 +125,7 @@ object Particularize:
         ): (String, LiftsOrderer) = {
           // Completed all work
           if (workList.isEmpty) {
-            val query = sqlResult.foldLeft("")((concatonation, nextExpr) => concatonation + nextExpr)
+            val query = sqlResult.foldLeft("")((concatenation, nextExpr) => concatenation + nextExpr)
             (query, LiftsOrderer(lifts.toList)(traceConfig))
           } else {
             val head = workList.head
@@ -156,7 +156,7 @@ object Particularize:
                     .mapWithHasNext((i, hasNext) => List(SetValueClauseNum(i), Item(stmt), DoneValueClauseNum(i, !hasNext)))
                     .flatten
 
-                trace"Instructions for releated clauses: ${repeatedClauses}".andLog()
+                trace"Instructions for related clauses: ${repeatedClauses}".andLog()
                 apply(repeatedClauses ++ tail, sqlResult, lifts, liftsCount, valueClausesIndex)
               case Item(Statement(tokens)) =>
                 apply(tokens.toChunk.map(Item(_)) ++ tail, sqlResult, lifts, liftsCount, valueClausesIndex)
@@ -169,12 +169,12 @@ object Particularize:
                 apply(tail, sqlResult, lifts, liftsCount, num)
               case DoneValueClauseNum(num, isLast) =>
                 trace"Finished value clause: ${num}".andLog()
-                val reaminingWork =
+                val remainingWork =
                   if (!isLast)
                     Item(stmt", ") +: tail
                   else
                     tail
-                apply(reaminingWork, sqlResult, lifts, liftsCount, num)
+                apply(remainingWork, sqlResult, lifts, liftsCount, num)
             }
           }
         }

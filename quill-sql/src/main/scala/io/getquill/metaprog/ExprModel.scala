@@ -26,7 +26,7 @@ has to be "plucked" and inserted into a vase. The are still some conditions that
 of tree has to match so we call it "pluckable." Until we ascertain whether to re-insert
 or pluck, the Tree is held (temporarily) inside of a Bin.
 
-Different construcuts follow these rules in different ways. Scalar values for instances
+Different constructs follow these rules in different ways. Scalar values for instances
 cannot contain contents making them non-re-insertable and therefore are always
 held inside of planters (i.e. the Planter) and replanted back into the part
 of the tree constructing the PrepareRow in the 'run' method.
@@ -191,7 +191,7 @@ object PlanterExpr {
 
   def findUnquotes(expr: Expr[Any])(using Quotes): List[PlanterExpr[_, _, _]] =
     ExprAccumulate(expr, recurseWhenMatched = false) {
-      // Since we are also searching expressions inside spliced quotatations (in the Lifts slot) those things are not unquoted
+      // Since we are also searching expressions inside spliced quotations (in the Lifts slot) those things are not unquoted
       // so we to search all planter expressions, not just the unquotes.
       // Note however that once we have found a lift we do not need to recurse searching lifts inside of it. There is
       // one case in EagerEntitiesPlanterExpr where InjectableEagerLift is inside it but we do not care about
@@ -199,7 +199,7 @@ object PlanterExpr {
       case expr @ PlanterExpr.Uprootable(planter) => planter
     }
 
-  // TODO Find a way to propogate PrepareRow into here
+  // TODO Find a way to propagate PrepareRow into here
   // pull vases out of Quotation.lifts
   object UprootableList {
     def unapply(expr: Expr[List[Any]])(using Quotes): Option[List[PlanterExpr[_, _, _]]] = {
@@ -242,7 +242,7 @@ object QuotedExpr {
         /* No runtime lifts allowed for inline quotes so quotationPouches.length must be 0 */
         case exprr @ '{ Quoted.apply[qt]($ast, $lifts, Nil) } =>
           Some(QuotedExpr(ast, lifts, '{ Nil }))
-        case TypedMatroshka(tree) =>
+        case TypedMatryoshka(tree) =>
           `Quoted.apply`.unapply(tree)
         case _ =>
           None
@@ -254,7 +254,7 @@ object QuotedExpr {
     def unapply(expr: Expr[Any])(using Quotes): Option[(QuotedExpr, List[PlanterExpr[_, _, _]])] =
       expr match {
         /*
-        It is possible that there are inlines, if so they cannot be in the AST since that is re-syntheized on every quote call so any references they
+        It is possible that there are inlines, if so they cannot be in the AST since that is re-synthesized on every quote call so any references they
         use have to be in the lifts/runtimeQuotes. If it is Uprootable there are no runtimeQuotes so we just have to do the nesting in the
          */
         case SealedInline(parent, defs, `Quoted.apply`(quotedExpr @ QuotedExpr(ast, PlanterExpr.UprootableList(lifts), _))) =>
@@ -341,7 +341,7 @@ object QuotationLotExpr {
       /*
        * Specifically the inner `Uninline` part allows using metas e.g. InsertMeta that
        * are defined in parent contexts e.g.
-       * class Stuff { object InnertStuff { inline given InsertMeta[Product] = insertMeta(_.id) } }
+       * class Stuff { object InsertStuff { inline given InsertMeta[Product] = insertMeta(_.id) } }
        * and then imported into other places e.g.
        * class OtherStuff extends Stuff { import InnerStuff.{given, _} } because multiple `Inline` blocks
        * will be nested around the InsertMeta.apply part.
@@ -358,7 +358,7 @@ object QuotationLotExpr {
        * Otherwise, we may run into unbound-variable issues when the lifts inside the Quoted.apply are extracted.
        */
       UntypeExpr(Uninline(expr)) match {
-        // Extract the entity, the uid and any other expressions the qutation bin may have
+        // Extract the entity, the uid and any other expressions the quotation bin may have
         // (e.g. the extractor if the QuotationLot is a QueryMeta). That `Uninline`
         // is needed because in some cases, the `underlyingArgument` call (that gets called somewhere before here)
         // will not be able to remove all inlines which will produce a tree that cannot be matched.
@@ -400,7 +400,7 @@ object QuotationLotExpr {
     def apply(expr: Expr[Any])(using Quotes): QuotationLotExpr =
       import quotes.reflect._
       unapply(expr).getOrElse {
-        quotes.reflect.report.throwError(s"The expression: ${Format(Printer.TreeShortCode.show(expr.asTerm))} is not a valid unquotation of a Quoted Expression (i.e. a [quoted-expression].unqoute) and cannot be unquoted.")
+        quotes.reflect.report.throwError(s"The expression: ${Format(Printer.TreeShortCode.show(expr.asTerm))} is not a valid unquotation of a Quoted Expression (i.e. a [quoted-expression].unquote) and cannot be unquoted.")
       }
 
     def unapply(expr: Expr[Any])(using Quotes): Option[QuotationLotExpr] =
@@ -436,7 +436,7 @@ object QuotationLotExpr {
 
   /**
    * QuotationLots that have runtime values hance cannot be re-planted into the scala AST and
-   * they need to be put into QuotationVasees.
+   * they need to be put into QuotationVases.
    * The 'other' argument is meant to be used in various unique circumstances. Right now it
    * is just used by a QueryMeta to carry an extractor function that contra-maps back to the T type
    */

@@ -98,7 +98,7 @@ object LiftMacro {
     val liftPlanters =
       lifts.map((liftKey, lift) =>
         // since we don't have an implicit Type for every single lift, we need to pull out each of their TypeReprs convert them to Type and manually pass them in
-        // Also need to widen the type otherwise for some value v=Person(name: String) the type will be TermRef(TermRef(NoPrefix,val v),val name) as oppsoed to 'String'
+        // Also need to widen the type otherwise for some value v=Person(name: String) the type will be TermRef(TermRef(NoPrefix,val v),val name) as opposed to 'String'
         val liftType = lift.asTerm.tpe.widen.asType
         liftType match {
           case '[T => liftT] =>
@@ -161,12 +161,12 @@ object LiftMacro {
 
   private[getquill] def liftProduct[T, PrepareRow, Session](productEntity: Expr[T])(using qctx: Quotes, tpe: Type[T], prepareRowTpe: Type[PrepareRow], sessionTpe: Type[Session]): Expr[CaseClassLift[T]] = {
     import qctx.reflect._
-    // Elaborate the entity and get it's lift. Since we are in the lifter, the elabration side is the encoding side (i.e. since lifts are doing Encoding).
+    // Elaborate the entity and get it's lift. Since we are in the lifter, the elaboration side is the encoding side (i.e. since lifts are doing Encoding).
     val TaggedLiftedCaseClass(caseClassAst, lifts) = ElaborateStructure.ofProductValue[T](productEntity, ElaborationSide.Encoding).reKeyWithUids()
     val liftPlanters =
       lifts.map((liftKey, lift) =>
         // since we don't have an implicit Type for every single lift, we need to pull out each of their TypeReprs convert them to Type and manually pass them in
-        // Also need to widen the type otherwise for some value v=Person(name: String) the type will be TermRef(TermRef(NoPrefix,val v),val name) as oppsoed to 'String'
+        // Also need to widen the type otherwise for some value v=Person(name: String) the type will be TermRef(TermRef(NoPrefix,val v),val name) as opposed to 'String'
         val liftType = lift.asTerm.tpe.widen.asType
         liftType match {
           case '[liftT] =>

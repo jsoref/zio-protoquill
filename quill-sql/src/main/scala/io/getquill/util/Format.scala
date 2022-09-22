@@ -18,8 +18,8 @@ object Format {
   object TypeRepr {
     // since we need a qctx to be able to actually pass in a TypeRepr element, it's not possible
     // (unless lampepfl/dotty#10689 is resolved) to create a global module that does TypeRepr formatting. This is a bit
-    // of a hacky way around that that just requires the element to be an inner class of a Quotes instance
-    // and the casts it to the specific Quotes insance. Should reconsider this when lampepfl/dotty#10689 is fixed.
+    // of a hacky way around that just requires the element to be an inner class of a Quotes instance
+    // and the casts it to the specific Quotes instance. Should reconsider this when lampepfl/dotty#10689 is fixed.
     def apply(typeRepr: Quotes#reflectModule#TypeRepr)(using qctx: Quotes) =
       import qctx.reflect._
       Printer.TypeReprShortCode.show(typeRepr.asInstanceOf[qctx.reflect.TypeRepr])
@@ -95,12 +95,12 @@ object Format {
   }
 
   def apply(code: String, showErrorTrace: Boolean = false) = {
-    val encosedCode =
+    val enclosedCode =
       s"""|object DummyEnclosure {
             |  ${code}
             |}""".stripMargin
 
-    // NOTE: Very ineffifient way to get rid of DummyEnclosure on large blocks of code
+    // NOTE: Very inefficient way to get rid of DummyEnclosure on large blocks of code
     //       use only for debugging purposes!
     def unEnclose(enclosedCode: String) =
       val lines =
@@ -122,13 +122,13 @@ object Format {
     val formatted =
       Try {
         // val formatCls = classOf[ScalafmtFormat.type]
-        // val result = formatCls.getMethod("apply").invoke(null, encosedCode)
+        // val result = formatCls.getMethod("apply").invoke(null, enclosedCode)
         // println("============ GOT HERE ===========")
         // val resultStr = s"${result}"
         // resultStr
         ScalafmtFormat(
           // Various other cleanup needed to make the formatter happy
-          encosedCode
+          enclosedCode
             .replace("_*", "_")
             .replace("_==", "==")
             .replace("_!=", "!="),
@@ -136,7 +136,7 @@ object Format {
         )
       }.getOrElse {
         println("====== WARNING: Scalafmt Not Detected ====")
-        encosedCode
+        enclosedCode
       }
 
     unEnclose(formatted)

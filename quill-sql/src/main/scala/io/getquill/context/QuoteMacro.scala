@@ -28,12 +28,12 @@ object ExtractLifts {
   // appearing in the AST in multiple places.
   def extractLifts(body: Expr[Any])(using Quotes) = {
     // TODO If we want to support functionality to resolve all LazyPlanters into
-    // eager Planters before the 'run' function, need to look thorugh eager/lazy
+    // eager Planters before the 'run' function, need to look through eager/lazy
     // (planters) with the same UID and choose the ones that are eager for the same UID
     // i.e. since they would be the resolved ones
     // val m =
 
-    // order of the lifts shuold not matter
+    // order of the lifts should not matter
     // PlanterExpr.findUnquotes(body).zipWithIndex           // preserve the original order
     //   .groupBy((r, idx) => r.uid)                         // group by uids
     //   .map((uid, planters) => planters.sortBy(_._2).head) // for each uid, pick first index
@@ -42,7 +42,7 @@ object ExtractLifts {
 
     import quotes.reflect._
 
-    // TODO First one for each UID should win because it's the outermost one, should make sure tha't the case
+    // TODO First one for each UID should win because it's the outermost one, should make sure that's the case
     // PlanterExpr.findUnquotes(body).foldLeft(LinkedHashMap[String, PlanterExpr[_, _, _]]())((elem, map) => (map.addIfNotContains(elem.uid, elem)))
     PlanterExpr.findUnquotes(body).distinctBy(_.uid).map(_.plant)
   }

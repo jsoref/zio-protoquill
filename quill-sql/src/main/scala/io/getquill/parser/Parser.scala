@@ -7,7 +7,7 @@ import io.getquill.metaprog.QuotedExpr
 import scala.quoted._
 import scala.annotation.StaticAnnotation
 import scala.deriving._
-import io.getquill.Embedable
+import io.getquill.Embeddable
 
 import scala.reflect.ClassTag
 import io.getquill.norm.capture.AvoidAliasConflict
@@ -205,7 +205,7 @@ class OrderingParser(val rootParse: Parser)(using Quotes, TranspileConfig) exten
   def attempt: History ?=> PartialFunction[Expr[_], Ordering] = {
     case '{ implicitOrd } => AscNullsFirst
 
-    // Doing this on a lower level since there are multiple cases of Order.apply with multiple arguemnts
+    // Doing this on a lower level since there are multiple cases of Order.apply with multiple arguments
     case Unseal(Apply(TypeApply(Select(Ident("Ord"), "apply"), _), args)) =>
       // parse all sub-orderings if this is a composite
       val subOrderings = args.map(_.asExpr).map(ordExpression => attempt.lift(ordExpression).getOrElse(failParse(ordExpression, classOf[Ordering])))
@@ -277,9 +277,9 @@ class ActionParser(val rootParse: Parser)(using Quotes, TranspileConfig)
     // (for dialect-specific behavior, try to summon a dialect implicitly, it may not exist since a dialect may
     // not be supported. If one exists then check the type of returning thing. If not then dont.
     // Later: Introduce a module that verifies the AST later before compilation and emits a warning if the returning type is incorrect
-    //        do the same thing for dynamic contexts witha log message
+    //        do the same thing for dynamic contexts with a log message
 
-    // Form:    ( (Query[Perosn]).[action](....) ).returning[T]
+    // Form:    ( (Query[Person]).[action](....) ).returning[T]
     // Example: ( query[Person].insertValue(lift(joe))).returning[Something]
     case '{ ($action: Insert[t]).returning[r] } =>
       report.throwError(s"A 'returning' clause must have arguments.")
@@ -392,7 +392,7 @@ class ActionParser(val rootParse: Parser)(using Quotes, TranspileConfig)
       case (true, IsActionType()) =>
         val newBody =
           actionType match
-            case '[at] => ElaborateStructure.ofAribtraryType[at](ident.name, ElaborationSide.Decoding) // elaboration side is Decoding since this is for entity being returned from the Quill query
+            case '[at] => ElaborateStructure.ofArbitraryType[at](ident.name, ElaborationSide.Decoding) // elaboration side is Decoding since this is for entity being returned from the Quill query
         newBody
       case (true, _) =>
         report.throwError("Could not process whole-record 'returning' clause. Consider trying to return individual columns.")
@@ -445,7 +445,7 @@ class OptionParser(rootParse: Parser)(using Quotes, TranspileConfig) extends Par
 
   /**
    * Note: The -->, -@> etc.. clauses are just to optimize the match by doing an early-exit if possible.
-   * they don't actaully do any application-relevant logic
+   * they don't actually do any application-relevant logic
    */
   def attempt = {
     case "isEmpty" --> '{ ($o: Option[t]).isEmpty } =>
@@ -534,7 +534,7 @@ class QueryParser(val rootParse: Parser)(using Quotes, TranspileConfig)
     case "withFilter" -@> '{ ($q: Query[qt]).withFilter(${ Lambda1(ident, tpe, body) }) } =>
       Filter(rootParse(q), cleanIdent(ident, tpe), rootParse(body))
 
-    case "concatMap" -@@> '{ type t1; type t2; ($q: Query[qt]).concatMap[`t1`, `t2`](${ Lambda1(ident, tpe, body) })($unknown_stuff) } => // ask Alex why is concatMap like this? what's unkonwn_stuff?
+    case "concatMap" -@@> '{ type t1; type t2; ($q: Query[qt]).concatMap[`t1`, `t2`](${ Lambda1(ident, tpe, body) })($unknown_stuff) } => // ask Alex why is concatMap like this? what's unknown_stuff?
       ConcatMap(rootParse(q), cleanIdent(ident, tpe), rootParse(body))
 
     case "union" -@> '{ ($a: Query[t]).union($b) }       => Union(rootParse(a), rootParse(b))
@@ -870,7 +870,7 @@ class OperationsParser(val rootParse: Parser)(using Quotes, TranspileConfig) ext
 
     case NamedOp1('{ ($leftRaw: Ordered[t]) }, operator(op), right) =>
       // If this is an operator tacked-on via an implicit class (e.g. the pattern used in DateOps) it is
-      // legimiate, pull out the actual implicit class argument. This is a valid case of ProtoQuill use of implicit classes.
+      // legitimate, pull out the actual implicit class argument. This is a valid case of ProtoQuill use of implicit classes.
       // (unlike extension methods)
       val left =
         leftRaw match
@@ -904,8 +904,8 @@ class OperationsParser(val rootParse: Parser)(using Quotes, TranspileConfig) ext
     // toString is automatically converted into the Apply form i.e. foo.toString automatically becomes foo.toString()
     // so we need to parse it as an Apply. The others don't take arg parens so they are not in apply-form.
 
-    case Unseal(Apply(Select(encodeable, "toString"), List())) if isValue(encodeable.tpe) =>
-      val inner = rootParse(encodeable.asExpr)
+    case Unseal(Apply(Select(encodable, "toString"), List())) if isValue(encodable.tpe) =>
+      val inner = rootParse(encodable.asExpr)
       Infix(List("cast(", " as VARCHAR)"), List(inner), false, false, inner.quat)
     case Unseal(Select(num, "toInt")) if isValue(num.tpe)    => rootParse(num.asExpr)
     case Unseal(Select(num, "toLong")) if isValue(num.tpe)   => rootParse(num.asExpr)

@@ -38,7 +38,7 @@ object StaticSpliceMacro {
       term match
         // recurse on Module.Something
         case select: Select => recurseInto(select)
-        // recurse on Module.SomethingAply() from which the empty-args apply i.e. `()` needs to be ignored
+        // recurse on Module.SomethingApply() from which the empty-args apply i.e. `()` needs to be ignored
         case select @ IgnoreApplyNoargs(_: Select) => recurseInto(select)
         case id: Ident                             => Some((id, List()))
         case _                                     => None
@@ -90,7 +90,7 @@ object StaticSpliceMacro {
     val value = valueRaw.asTerm.underlyingArgument
 
     // TODO summon a Expr[StaticSplicer] using the T type passed originally.
-    // Then use use LoadModule to get the value of that thing during runtime so we can use it
+    // Then use LoadModule to get the value of that thing during runtime so we can use it
     // (i.e. see io.getquill.metaprog.SummonParser on how to do that)
     // for primitive types e.g. String, Int, Float etc... rather then making summonable splicers
     // it is easier to just splice them directly, since otherwise those StaticSplicer modules themselves
